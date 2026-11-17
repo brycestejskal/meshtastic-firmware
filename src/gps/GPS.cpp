@@ -1643,8 +1643,11 @@ int32_t GPS::runOnce()
             return currentDelay; // Setup failed, re-run in two seconds
 
         if (gnssModel == GNSS_MODEL_UNKNOWN) {
-            LOG_WARN("GPS not detected; not present this boot");
-            return disable();
+            // T114 L76K often starts streaming NMEA only after the probe gives up.
+            // 2.7 kept listening; powering off here drops that recovery path.
+            LOG_WARN("GPS probe failed; listening for NMEA anyway");
+            gnssModel = GNSS_MODEL_GENERIC_NMEA;
+            setConnected();
         }
 
         // We have now loaded our saved preferences from flash
